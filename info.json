@@ -1,8 +1,8 @@
 {
   "version": "0.1.0",
   "download_url" : "https://github.com/leahpar/sumup-stock/releases/latest/download/sumup-stock.zip",
-  "requires" : "5.7",
-  "tested" : "5.7.1",
+  "requires" : "6.3",
+  "tested" : "6.3.1",
   "requires_php" : "8.2",
-  "last_updated" : "2023-09-19 12:00:00"
+  "last_updated" : "2023-09-20 11:00:00"
 }
