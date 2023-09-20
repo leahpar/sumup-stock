@@ -1,0 +1,31 @@
+# GitHub Action: whenever creating a new release of the source code,
+# https://leoloso.com/posts/github-action-to-release-wp-plugin/
+name: Generate Installable Plugin, and Upload as Release Asset
+on:
+    release:
+        types: [published]
+jobs:
+    build:
+        name: Upload Release Asset
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+            - name: Create output directory
+              run:  |
+                  cp -r . sumup-stock 2>/dev/null || :
+            - name: Create artifact
+              uses: montudor/action-zip@v0.1.0
+              with:
+                  args: zip -X -r sumup-stock.zip sumup-stock -x *.git* info.json
+            - name: Upload artifact
+              uses: actions/upload-artifact@v2
+              with:
+                  name: sumup-stock
+                  path: sumup-stock.zip
+            - name: Upload to release
+              uses: JasonEtco/upload-to-release@master
+              with:
+                  args: sumup-stock.zip application/zip
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
