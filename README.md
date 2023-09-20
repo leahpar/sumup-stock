@@ -1,4 +1,4 @@
-# sumup-stock-festival
+# Sumup Stock
 
 Plugin de MAJ des stocks WooCommerce depuis Sumup
 

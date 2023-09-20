@@ -1,8 +1,8 @@
 <?php
 
 /*
-Plugin Name: Sumup Stock Festival
-Plugin URI: https://github.com/leahpar/sumup-stock-festival
+Plugin Name: Sumup Stock
+Plugin URI: https://github.com/leahpar/sumup-stock
 Description: Plugin pour mettre à jour le stock de produits dans WooCommerce à partir des ventes Sumup.
 Version: 0.1.0
 Author: Raphaël Bacco
@@ -11,7 +11,7 @@ License: MIT
 */
 
 // URL de check de nouvelle version
-const SUMUP_STOCK_JSON_URL = 'https://raw.githubusercontent.com/leahpar/sumup-stock-festival/master/info.json';
+const SUMUP_STOCK_JSON_URL = 'https://raw.githubusercontent.com/leahpar/sumup-stock/master/info.json';
 
 // If this file is called directly, abort.
 if (!defined('WPINC')) {

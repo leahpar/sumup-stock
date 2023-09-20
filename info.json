@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "download_url" : "https://github.com/leahpar/sumup-stock-festival/releases/latest/download/sumup-stock-festival.zip",
+  "download_url" : "https://github.com/leahpar/sumup-stock/releases/latest/download/sumup-stock.zip",
   "requires" : "5.7",
   "tested" : "5.7.1",
   "requires_php" : "8.2",
