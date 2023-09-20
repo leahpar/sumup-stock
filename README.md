@@ -2,12 +2,16 @@
 
 Plugin de MAJ des stocks WooCommerce depuis Sumup
 
+## Installation
+
+1. [Télécharger le plugin](https://github.com/leahpar/sumup-stock/releases/latest)
+2. Dézipper le fichier
+3. Copier le dossier `sumup-stock` dans le dossier `wp-content/plugins` de votre site Wordpress
+4. Activer le plugin dans le menu `Extensions` de Wordpress
+5. Renseigner la clé API Sumup dans le menu `Réglages` > `SumupStock`
+6. Enjoy !
+
 ## Utilisation
-
-### Paramétrage
-
-Renseigner la clé API Sumup dans le menu `Réglages` > `SumupStock`
-
 
 ### Référence Sumup
 

@@ -10,16 +10,16 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout code
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
             - name: Create output directory
               run:  |
                   cp -r . sumup-stock 2>/dev/null || :
             - name: Create artifact
-              uses: montudor/action-zip@v0.1.0
+              uses: montudor/action-zip@v1
               with:
                   args: zip -X -r sumup-stock.zip sumup-stock -x *.git* info.json
             - name: Upload artifact
-              uses: actions/upload-artifact@v2
+              uses: actions/upload-artifact@v3
               with:
                   name: sumup-stock
                   path: sumup-stock.zip
