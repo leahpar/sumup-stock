@@ -1,6 +1,6 @@
 # Sumup Stock
 
-Plugin de MAJ des stocks WooCommerce depuis Sumup
+Plugin de MAJ des commandes & stocks WooCommerce depuis Sumup
 
 ## Installation
 
@@ -24,18 +24,16 @@ Indiquer la référence Sumup dans l'attribut' "Référence Sumup" de la fiche p
 
 1. Aller sur la page de l'outil dans le menu `Outils` > `SumupStock Importer`
 2. Renseigner la date du jour à importer
+
 ![img_1.png](img_1.png)
+ 
 3. Cliquer sur le bouton `Précharger`
 4. Les transactions du jour sont affichées, en indiquant si le produit est référencé sur WooCommerce.
+ 
 ![img_2.png](img_2.png)
-5. Cliquer sur le bouton `Mettre à jour les stocks`
+ 
+5. Cliquer sur le bouton `Importer les commandes`
 6. Enjoy !
-7. 
-
-## Améliorations possibles
-
-- [ ] Ajouter des cases à cocher pour choisir les produits à mettre à jour
-- [ ] Gestion de l'historique des transactions (pour ne pas importer 2 fois la même transaction)
 
 
 ## Documentation

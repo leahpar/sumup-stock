@@ -69,36 +69,38 @@ class SumupStockCore
     }
 
     public function adminPageContent() {
-        $date = date('Y-m-d');
         $data = null;
-        $action = $_POST['action'] ?? null;
         $message = null;
+        $action = $_POST['action'] ?? null;
+        $date = $_POST['sumup_date'] ?? date("Y-m-d");
 
-        if (isset($_POST['sumup_date'])) {
-            $date = $_POST['sumup_date'];
-
-            if (!class_exists('SumupStockService')) {
-                require_once 'SumupStockService.php';
-            }
-
-            $sumup = new SumupStockService(
-                SK: $this->options['sumup_api_key'],
-                api: "https://api.sumup.com/v0.1/me"
-            );
-            $transactions = $sumup->getTransactions(
-                date_start: $date,
-                date_end:   $date
-            );
-
-            $sumup->mapTransactions2ProductsIds($transactions);
-
-            $data = $transactions;
-
-            if ($action == 'import') {
-                $sumup->import($data);
-                $message = "Import effectué avec succès.";
-            }
+        if ($_POST['modifier']??false) {
+            $date = (new \DateTime($date))->modify($_POST['modifier'] . ' day')->format('Y-m-d');
         }
+
+        if (!class_exists('SumupStockService')) {
+            require_once 'SumupStockService.php';
+        }
+
+        $sumup = new SumupStockService(
+            SK: $this->options['sumup_api_key'],
+            api: "https://api.sumup.com/v0.1/me"
+        );
+        $transactions = $sumup->getTransactions(
+            date_start: $date,
+            date_end:   $date
+        );
+
+        $sumup->mapTransactions2ProductsIds($transactions);
+        $sumup->mapTransactions2ordersIds($transactions);
+
+        $data = $transactions;
+
+        if ($action == 'import') {
+            $cpt = $sumup->import($data, $_POST);
+            $message = "$cpt commandes importées";
+        }
+
         include __DIR__ . '/../views/import-sumup-stock.php';
     }
 
