@@ -47,7 +47,7 @@ class SumupStockService
                 "/transactions",
                 ['id' => $tr->id]
             );
-            $transaction->products = $details->products;
+            $transaction->products = $details->products ?? [];
             $transactions[] = $transaction;
         }
 

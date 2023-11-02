@@ -69,18 +69,18 @@
                 <?php /** @var Transaction $transaction */ ?>
                 <?php foreach ($data as $transaction): ?>
                     <tr>
-                    <?php $rowspan = 'rowspan="'.count($transaction->products).'"' ?>
+                    <?php $rowspan = 'rowspan="'.(count($transaction->products)?:1).'"' ?>
                         <td <?= $rowspan?>>
                             <input type="checkbox" name="toImport[]" value="<?= $transaction->id ?>"
                                 <?php if ($transaction->wc_order) : echo "disabled" ?>
                                 <?php elseif (!$transaction->hasAllProducts()): echo "disabled" ?>
+                                <?php elseif (count($transaction->products)==0): echo "disabled" ?>
                                 <?php else: echo "checked" ?>
                                 <?php endif ?>
                             >
                         </td>
                         <td <?= $rowspan?>>
                             <?= $transaction->date->format('d/m/Y H:i:s') ?>
-                            
                         </td>
                         <td <?= $rowspan?>>
                             <?php if ($transaction->wc_order): ?>
