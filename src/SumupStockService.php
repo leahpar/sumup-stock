@@ -42,6 +42,10 @@ class SumupStockService
 
         $transactions = [];
         foreach ($data as $tr) {
+
+            // On ne prend pas les transactions de remboursements
+            if ($tr->type == 'REFUND') continue;
+
             $transaction = new Transaction(
                 id: $tr->id,
                 amount: $tr->amount,
@@ -51,8 +55,20 @@ class SumupStockService
                 "/transactions",
                 ['id' => $tr->id]
             );
+
+            foreach ($details->events as $event) {
+                if ($event->type == 'REFUND') {
+                    $transaction->refund += $event->amount;
+                }
+            }
+
             $transaction->products = $details->products ?? [];
             $transactions[] = $transaction;
+
+            //echo '<pre>';
+            //echo "====================================\n";
+            //var_dump($tr, $details);
+            //echo '</pre>';
         }
 
         return $transactions;
@@ -115,9 +131,10 @@ class SumupStockService
         return $order[0] ?? null;
     }
 
-    public function newOrder(object $transaction): WC_Order
+    public function newOrder(Transaction $transaction): WC_Order
     {
         // https://rudrastyh.com/woocommerce/create-orders-programmatically.html
+        /** @var WC_Order $order */
         $order = wc_create_order();
 
         foreach ($transaction->products as $p) {
@@ -139,8 +156,18 @@ class SumupStockService
 
         $order->calculate_totals();
         $order->set_status('wc-completed');
-
         $order->save();
+
+        // Remboursement
+        if ($transaction->refund > 0) {
+            $refund = wc_create_refund([
+                'amount' => $transaction->refund,
+                'order_id' => $order->get_id(),
+                'date_created' => $transaction->date->format('Y-m-d H:i:s'),
+            ]);
+            $refund->save();
+        }
+
         return $order;
     }
 

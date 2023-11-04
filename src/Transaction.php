@@ -6,6 +6,7 @@ class Transaction
     public array $products = [];
     public ?WC_Order $wc_order = null;
     public \DateTime $date;
+    public int $refund = 0;
 
     public function __construct(
         public readonly string $id,

@@ -154,11 +154,14 @@ class SumupStockCore
      */
     public function sumup_stock_cron_auto_import()
     {
+        $date = date("Y-m-d");
+        //var_dump("sumup_stock_cron_auto_import", $date);
+
         // Import désactivé
         if ($this->options['sumup_cron_enabled'] === false) {
+            //var_dump("Import désactivé");
             return;
         }
-        $date = date("Y-m-d");
 
         if (!class_exists('SumupStockService')) {
             require_once 'SumupStockService.php';
@@ -190,16 +193,19 @@ class SumupStockCore
                 fn(Transaction $t) => !$t->isImportEnabled(),
             );
 
-            if ($commandesImported > 0 && count($transactionsNotImported) > 0) {
+            if ($commandesImported > 0 || count($transactionsNotImported) > 0) {
                 $message = "Import automatique SumupStock\n\n";
-                $message .= "$commandesImported commandes importées\n\n";
+                $message .= "$commandesImported commandes crées\n\n";
 
-                $message .= count($transactionsNotImported)." transactions non importées :\n";
+                $message .= count($transactionsNotImported)." transaction(s) non importée(s) :\n";
                 foreach ($transactionsNotImported as $t) {
                     $message .= " - ". $t->date->format('d/m/Y H:i:s');
                     $message .= " " . str_pad($t->amount, 4, " ", STR_PAD_LEFT) . " €";
                     foreach ($t->products as $p) {
                         $message .= " | " . "$p->name";
+                    }
+                    if (count($t->products) == 0) {
+                        $message .= " | " . "Aucun produit !";
                     }
                     $message .= "\n";
                 }

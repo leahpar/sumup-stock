@@ -53,7 +53,6 @@
                     <th>Date</th>
                     <th>Commande</th>
                     <th>Montant</th>
-                    <th>Référence</th>
                     <th>Produit</th>
                     <th>Quantité</th>
                     <th>Prix</th>
@@ -92,16 +91,25 @@
                             <?php endif ?>
                         </td>
                         <td <?= $rowspan?>>
-                            <?= $transaction->amount ?> €
-                            
+                            <?php if ($transaction->refund > 0): ?>
+                                <span style="text-decoration: line-through">
+                                    <?= $transaction->amount ?> €
+                                </span>
+                                <br>
+                                <?= $transaction->amount - $transaction->refund ?> €
+                            <?php else: ?>
+                                <?= $transaction->amount ?> €
+                            <?php endif ?>
                         </td>
                         <?php $first = true ?>
                         <?php foreach ($transaction->products as $product): ?>
                             <?php if (!$first): ?>
                                 <tr>
                             <?php endif ?>
-                            <td><?= $product->name ?></td>
-                            <td><?= $product->wc_product_id ? "✅" : "⚠️" ?></td>
+                            <td>
+                                <?= $product->wc_product_id ? "" : "⚠️" ?>
+                                <?= $product->name ?>
+                            </td>
                             <td><?= $product->quantity ?></td>
                             <td><?= $product->price_with_vat ?> €</td>
                             <?php if (!$first): ?>
@@ -117,22 +125,21 @@
                     <th></th>
                     <th><?= count($transactions) ?> transactions</th>
                     <th><?= array_reduce($transactions, fn($a, $r) => $a + ($r->wc_order != null), 0)?> commandes</th>
-                    <th><?= array_reduce($transactions, fn($a, $r) => $a + $r->amount, 0)?> €</th>
+                    <th><?= array_reduce($transactions, fn($a, $r) => $a + ($r->amount - $r->refund), 0)?> €</th>
                     <th><?= array_reduce($transactions, fn($a, $r) => $a + $r->getNbProducts(), 0)?> Produits</th>
-                    <th></th>
                     <th></th>
                     <th></th>
                 </tr>
             </tfoot>
         </table>
 
-<!--        --><?php //if ($action != 'import'): ?>
         <p>
             <input type="hidden" name="sumup_date" value="<?= $date ?>">
             <input type="hidden" name="action" value="import">
-            <input type="submit" value="Importer les commandes sélectionnées" onclick="return confirm('Êtes-vous sûr ?')">
+            <input type="submit"
+                   value="Importer les commandes sélectionnées"
+                   onclick="return confirm('Êtes-vous sûr ?')">
         </p>
-<!--        --><?php //endif ?>
 
     </form>
 
