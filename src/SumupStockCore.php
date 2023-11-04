@@ -13,13 +13,48 @@ class SumupStockCore
         // Gestion options et page de configuration du plugin
         $this->options();
 
+        // Check options
+        if (empty($this->options['sumup_api_key'])) {
+            $msg = "SumupStock : La clé API n'est pas renseignée ";
+            $msg .= "(<a href='".admin_url('options-general.php?page=sumupstock')."'>ici</a>)";
+            add_action('admin_notices', function() use ($msg) {
+                ?>
+                <div class="notice notice-warning">
+                    <p><?= $msg ?></p>
+                </div>
+                <?php
+            });
+        }
+        if ($this->options['sumup_cron_enabled'] !== false && empty($this->options['sumup_cron_mail_cr'])) {
+            $msg = "SumupStock : L'email n'est pas renseigné ";
+            $msg .= "(<a href='".admin_url('options-general.php?page=sumupstock')."'>ici</a>)";
+            add_action('admin_notices', function() use ($msg) {
+                ?>
+                <div class="notice notice-warning">
+                    <p><?= $msg ?></p>
+                </div>
+                <?php
+            });
+        }
+
         // Menu admin
         add_action('admin_menu', [$this, 'adminMenuEntry']);
-
 
         // Hook de mise à jour du plugin
         add_filter('site_transient_update_plugins', [$this, 'sumup_stock_push_update']);
         add_action('upgrader_process_complete', [$this, 'sumup_stock_after_update'], 10, 2);
+
+        // Hook de mise à jour automatique (CRON)
+        add_action('sumup_stock_cron_auto_import', [$this, 'sumup_stock_cron_auto_import']);
+    }
+
+    public static function notif($type, $message)
+    {
+        ?>
+        <div class="notice notice-<?= $type ?>">
+            <p><?= $message ?></p>
+        </div>
+        <?php
     }
 
     /**
@@ -40,10 +75,15 @@ class SumupStockCore
                                 'id' => 'sumup_api_key',
                                 'title' => "SumUp API Secret Key",
                             ],
-                            //'product_reference_field' => [
-                            //    'id' => 'product_reference_field',
-                            //    'title' => "Nom de l'attribut produit contenant la référence SumUp",
-                            //],
+                            'sumup_cron_enabled' => [
+                                'id' => 'sumup_cron_enabled',
+                                'title' => "Activation de l'import automatique",
+                                'type' => 'checkbox',
+                            ],
+                            'sumup_cron_mail_cr' => [
+                                'id' => 'sumup_cron_mail_cr',
+                                'title' => "Mail destinataire compte rendu import automatique",
+                            ],
                         ],
                     ],
                 ],
@@ -72,7 +112,7 @@ class SumupStockCore
         $data = null;
         $message = null;
         $action = $_POST['action'] ?? null;
-        $date = $_POST['sumup_date'] ?? date("Y-m-d");
+        $date = $_POST['sumup_date'] ?? $_GET['sumup_date'] ?? date("Y-m-d");
 
         if ($_POST['modifier']??false) {
             $date = (new \DateTime($date))->modify($_POST['modifier'] . ' day')->format('Y-m-d');
@@ -82,26 +122,107 @@ class SumupStockCore
             require_once 'SumupStockService.php';
         }
 
-        $sumup = new SumupStockService(
-            SK: $this->options['sumup_api_key'],
-            api: "https://api.sumup.com/v0.1/me"
-        );
-        $transactions = $sumup->getTransactions(
-            date_start: $date,
-            date_end:   $date
-        );
+        $data = [];
+        try {
+            $sumup = new SumupStockService(
+                SK: $this->options['sumup_api_key'],
+                api: "https://api.sumup.com/v0.1/me"
+            );
+            $transactions = $sumup->getTransactions(
+                date_start: $date,
+                date_end: $date
+            );
 
-        $sumup->mapTransactions2ProductsIds($transactions);
-        $sumup->mapTransactions2ordersIds($transactions);
+            $sumup->mapTransactions2ProductsIds($transactions);
+            $sumup->mapTransactions2ordersIds($transactions);
 
-        $data = $transactions;
+            if ($action == 'import') {
+                $cpt = $sumup->import($transactions, $_POST);
+                $message = "$cpt commandes importées";
+            }
 
-        if ($action == 'import') {
-            $cpt = $sumup->import($data, $_POST);
-            $message = "$cpt commandes importées";
+        }
+        catch (\Exception $e) {
+            SumupStockCore::notif("error", $e->getMessage());
         }
 
         include __DIR__ . '/../views/import-sumup-stock.php';
+    }
+
+    /**
+     * Import automatique (CRON)
+     */
+    public function sumup_stock_cron_auto_import()
+    {
+        // Import désactivé
+        if ($this->options['sumup_cron_enabled'] === false) {
+            return;
+        }
+        $date = date("Y-m-d");
+
+        if (!class_exists('SumupStockService')) {
+            require_once 'SumupStockService.php';
+        }
+
+        try {
+            $sumup = new SumupStockService(
+                SK: $this->options['sumup_api_key'],
+                api: "https://api.sumup.com/v0.1/me"
+            );
+            $transactions = $sumup->getTransactions(
+                date_start: $date,
+                date_end: $date
+            );
+
+            $sumup->mapTransactions2ProductsIds($transactions);
+            $sumup->mapTransactions2ordersIds($transactions);
+
+            $post['toImport'] = array_filter(
+                    array_map(
+                       fn(Transaction $t) => $t->isImportEnabled() ? $t->id : null,
+                        $transactions,
+                    )
+                );
+            $commandesImported = $sumup->import($transactions, $post);
+
+            $transactionsNotImported = array_filter(
+                $transactions,
+                fn(Transaction $t) => !$t->isImportEnabled(),
+            );
+
+            if ($commandesImported > 0 && count($transactionsNotImported) > 0) {
+                $message = "Import automatique SumupStock\n\n";
+                $message .= "$commandesImported commandes importées\n\n";
+
+                $message .= count($transactionsNotImported)." transactions non importées :\n";
+                foreach ($transactionsNotImported as $t) {
+                    $message .= " - ". $t->date->format('d/m/Y H:i:s');
+                    $message .= " " . str_pad($t->amount, 4, " ", STR_PAD_LEFT) . " €";
+                    foreach ($t->products as $p) {
+                        $message .= " | " . "$p->name";
+                    }
+                    $message .= "\n";
+                }
+                $message .= "\n\n";
+                $message .= "https://alambicsducoq.fr/wp-admin/tools.php?page=sumup-stock-importer&sumup_date=$date";
+                $message .= "\n\n";
+                $res = wp_mail(
+                    $this->options['sumup_cron_mail_cr'],
+                    "SumupStock - Transactions non importées",
+                    $message,
+                );
+                //var_dump(["res" => $res, $message]);
+            }
+
+        }
+        catch (\Exception $e) {
+            $res = wp_mail(
+                $this->options['sumup_api_mail_cr'],
+                "SumupStock - Erreur import automatique",
+                $e->getMessage(),
+            );
+            //var_dump(["res2" => $res, $message]);
+        }
     }
 
     /**

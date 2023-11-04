@@ -30,4 +30,11 @@ class Transaction
         return array_reduce($this->products, fn($a, $p) => $a + $p->quantity, 0);
     }
 
+    public function isImportEnabled(): bool
+    {
+        return $this->wc_order === null
+            && $this->hasAllProducts()
+            && count($this->products) > 0;
+    }
+
 }

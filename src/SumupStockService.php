@@ -11,10 +11,10 @@ class SumupStockService
         private readonly string $api
     ) {}
 
-    private function get($url, $params) {
-
+    private function get($url, $params)
+    {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->api . $url . '?' . http_build_query($params));
+        curl_setopt($ch, CURLOPT_URL, $this->api.$url.'?'. http_build_query($params));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Authorization: Bearer ' . $this->SK,
@@ -35,6 +35,10 @@ class SumupStockService
                 'end_date' => $date_end,
             ]
         );
+
+        if (isset($data->error_message)) {
+            throw new \Exception($data->error_message);
+        }
 
         $transactions = [];
         foreach ($data as $tr) {
@@ -69,6 +73,7 @@ class SumupStockService
             }
         }
     }
+
     public function mapTransactions2ordersIds(array $transactions)
     {
         /** @var Transaction $t */
@@ -100,17 +105,6 @@ class SumupStockService
         return $cpt;
     }
 
-    public function importTransaction(Transaction $transaction)
-    {
-        //foreach ($transaction->products as $p) {
-        //    if ($p->wc_product_id) {
-        //        $product = wc_get_product($p->wc_product_id);
-        //        $product->set_stock_quantity($product->get_stock_quantity() - $p->quantity);
-        //        $product->save();
-        //    }
-        //}
-    }
-
     public function getOrder(string $sumupTrId): ?WC_Order
     {
         $order = wc_get_orders([
@@ -131,8 +125,8 @@ class SumupStockService
                 wc_get_product($p->wc_product_id),
                 $p->quantity,
                 [
-                    'subtotal' => $p->price,
-                    'total' => $p->price,
+                    'subtotal' => $p->price * $p->quantity,
+                    'total' => $p->price * $p->quantity,
                 ]
             );
         }

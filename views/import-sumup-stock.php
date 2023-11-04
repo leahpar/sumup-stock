@@ -32,7 +32,7 @@
     <input type="submit" value="Précharger">
 </form>
 
-<?php if ($data !== null): ?>
+<?php if ($transactions !== null): ?>
 
     <form method="post">
 
@@ -60,24 +60,23 @@
                 </tr>
             </thead>
             <tbody>
-                <?php if (empty($data)): ?>
+                <?php if (empty($transactions)): ?>
                     <tr>
                         <td colspan="99">Aucune transaction</td>
                     </tr>
                 <?php endif ?>
 
                 <?php /** @var Transaction $transaction */ ?>
-                <?php foreach ($data as $transaction): ?>
+                <?php foreach ($transactions as $transaction): ?>
                     <tr>
                     <?php $rowspan = 'rowspan="'.(count($transaction->products)?:1).'"' ?>
                         <td <?= $rowspan?>>
                             <input type="checkbox" name="toImport[]" value="<?= $transaction->id ?>"
-                                <?php if ($transaction->wc_order) : echo "disabled" ?>
-                                <?php elseif (!$transaction->hasAllProducts()): echo "disabled" ?>
-                                <?php elseif (count($transaction->products)==0): echo "disabled" ?>
-                                <?php else: echo "checked" ?>
-                                <?php endif ?>
+                                <?= !$transaction->isImportEnabled() ? "disabled" : "checked" ?>
                             >
+                            <?php // var_dump($transaction->wc_order) ?>
+                            <?php // var_dump(!$transaction->hasAllProducts()) ?>
+                            <?php // var_dump(count($transaction->products)>0) ?>
                         </td>
                         <td <?= $rowspan?>>
                             <?= $transaction->date->format('d/m/Y H:i:s') ?>
@@ -116,10 +115,10 @@
             <tfoot>
                 <tr>
                     <th></th>
-                    <th><?= count($data) ?> transactions</th>
-                    <th><?= array_reduce($data, fn($a, $r) => $a + ($r->wc_order != null), 0)?> commandes</th>
-                    <th><?= array_reduce($data, fn($a, $r) => $a + $r->amount, 0)?> €</th>
-                    <th><?= array_reduce($data, fn($a, $r) => $a + $r->getNbProducts(), 0)?> Produits</th>
+                    <th><?= count($transactions) ?> transactions</th>
+                    <th><?= array_reduce($transactions, fn($a, $r) => $a + ($r->wc_order != null), 0)?> commandes</th>
+                    <th><?= array_reduce($transactions, fn($a, $r) => $a + $r->amount, 0)?> €</th>
+                    <th><?= array_reduce($transactions, fn($a, $r) => $a + $r->getNbProducts(), 0)?> Produits</th>
                     <th></th>
                     <th></th>
                     <th></th>
