@@ -7,9 +7,11 @@ class Transaction
     public ?WC_Order $wc_order = null;
     public \DateTime $date;
     public int $refund = 0;
+    public ?string $type = null;
 
     public function __construct(
         public readonly string $id,
+        public readonly string $code,
         public readonly float $amount,
         public readonly string $timestamp,
     ) {
@@ -36,6 +38,16 @@ class Transaction
         return $this->wc_order === null
             && $this->hasAllProducts()
             && count($this->products) > 0;
+    }
+
+    public function setTypePayment(?string $type, ?object $card): void
+    {
+        if ($type == "POS" && $card) {
+            $this->type = 'CB';
+        }
+        elseif ($type == "CASH") {
+            $this->type = 'CASH';
+        }
     }
 
 }

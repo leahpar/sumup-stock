@@ -51,6 +51,8 @@
                                checked>
                     </th>
                     <th>Date</th>
+                    <th>Transaction</th>
+                    <th>Paiement</th>
                     <th>Commande</th>
                     <th>Montant</th>
                     <th>Produit</th>
@@ -79,6 +81,12 @@
                         </td>
                         <td <?= $rowspan?>>
                             <?= $transaction->date->format('d/m/Y H:i:s') ?>
+                        </td>
+                        <td <?= $rowspan?>>
+                            <?= $transaction->code ?>
+                        </td>
+                        <td <?= $rowspan?>>
+                            <?= $transaction->type ?>
                         </td>
                         <td <?= $rowspan?>>
                             <?php if ($transaction->wc_order): ?>
@@ -123,7 +131,9 @@
             <tfoot>
                 <tr>
                     <th></th>
+                    <th></th>
                     <th><?= count($transactions) ?> transactions</th>
+                    <th></th>
                     <th><?= array_reduce($transactions, fn($a, $r) => $a + ($r->wc_order != null), 0)?> commandes</th>
                     <th><?= array_reduce($transactions, fn($a, $r) => $a + ($r->amount - $r->refund), 0)?> €</th>
                     <th><?= array_reduce($transactions, fn($a, $r) => $a + $r->getNbProducts(), 0)?> Produits</th>

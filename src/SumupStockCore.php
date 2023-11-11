@@ -190,7 +190,7 @@ class SumupStockCore
 
             $transactionsNotImported = array_filter(
                 $transactions,
-                fn(Transaction $t) => !$t->isImportEnabled(),
+                fn(Transaction $t) => !$t->isImportEnabled() && $t->wc_order === null,
             );
 
             if ($commandesImported > 0 || count($transactionsNotImported) > 0) {
@@ -198,6 +198,7 @@ class SumupStockCore
                 $message .= "$commandesImported commandes crées\n\n";
 
                 $message .= count($transactionsNotImported)." transaction(s) non importée(s) :\n";
+                /** @var Transaction $t */
                 foreach ($transactionsNotImported as $t) {
                     $message .= " - ". $t->date->format('d/m/Y H:i:s');
                     $message .= " " . str_pad($t->amount, 4, " ", STR_PAD_LEFT) . " €";

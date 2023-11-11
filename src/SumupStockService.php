@@ -36,6 +36,11 @@ class SumupStockService
             ]
         );
 
+//        echo '<pre>';
+//        echo "====================================\n";
+//        var_dump($data);
+//        echo '</pre>';
+
         if (isset($data->error_message)) {
             throw new \Exception($data->error_message);
         }
@@ -48,6 +53,7 @@ class SumupStockService
 
             $transaction = new Transaction(
                 id: $tr->id,
+                code: $tr->transaction_code,
                 amount: $tr->amount,
                 timestamp: $tr->timestamp,
             );
@@ -63,12 +69,14 @@ class SumupStockService
             }
 
             $transaction->products = $details->products ?? [];
+            $transaction->setTypePayment($details->payment_type??null, $details->card??null);
             $transactions[] = $transaction;
 
-            //echo '<pre>';
-            //echo "====================================\n";
-            //var_dump($tr, $details);
-            //echo '</pre>';
+//            echo '<pre>';
+//            echo "====================================\n";
+//            var_dump($tr, $details);
+//            var_dump($details->payment_type??null, $details->card??null);
+//            echo '</pre>';
         }
 
         return $transactions;

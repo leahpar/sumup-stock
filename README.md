@@ -23,7 +23,7 @@ Indiquer la référence Sumup dans l'attribut' "Référence Sumup" de la fiche p
 ### Mise à jour des stocks
 
 1. Aller sur la page de l'outil dans le menu `Outils` > `SumupStock Importer`
-2. Renseigner la date du jour à importer
+2. Choisissez la date du jour à importer
 
 ![img_1.png](img_1.png)
  
@@ -35,6 +35,11 @@ Indiquer la référence Sumup dans l'attribut' "Référence Sumup" de la fiche p
 5. Cliquer sur le bouton `Importer les commandes`
 6. Enjoy !
 
+
+## Automatisation
+
+Le traitement d'import peut être automatisé (cron) en l'activant dans le menu `Réglages` > `SumupStock`.
+L'import se fait alors toutes les heures, avec un email de rapport si des transactions n'ont pas été importées.
 
 ## Documentation
 

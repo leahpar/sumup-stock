@@ -4,7 +4,7 @@
 Plugin Name: Sumup Stock
 Plugin URI: https://github.com/leahpar/sumup-stock
 Description: Plugin pour mettre à jour le stock de produits dans WooCommerce à partir des ventes Sumup.
-Version: 0.4.0
+Version: 0.5.0
 Author: Raphaël Bacco
 Author URI: https://github.com/leahpar
 License: MIT
