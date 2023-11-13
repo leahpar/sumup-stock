@@ -124,17 +124,23 @@ class SumupStockCore
 
         $data = [];
         try {
+
+            $t = microtime(true);
             $sumup = new SumupStockService(
                 SK: $this->options['sumup_api_key'],
                 api: "https://api.sumup.com/v0.1/me"
             );
             $transactions = $sumup->getTransactions(
                 date_start: $date,
-                date_end: $date
+                date_end: $date,
+                filterOutWcOrders: $action == 'import' // Import, OSEF des commandes déjà importées
             );
+            $timing['sumup_api'] = microtime(true) - $t;
 
+            $t = microtime(true);
             $sumup->mapTransactions2ProductsIds($transactions);
             $sumup->mapTransactions2ordersIds($transactions);
+            $timing['wp_queries'] = microtime(true) - $t;
 
             if ($action == 'import') {
                 $cpt = $sumup->import($transactions, $_POST);
@@ -174,7 +180,8 @@ class SumupStockCore
             );
             $transactions = $sumup->getTransactions(
                 date_start: $date,
-                date_end: $date
+                date_end: $date,
+                filterOutWcOrders: true // Import auto, OSEF des commandes déjà importées
             );
 
             $sumup->mapTransactions2ProductsIds($transactions);

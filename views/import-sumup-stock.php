@@ -155,4 +155,9 @@
 
 <?php endif ?>
 
+<pre>
+API Sumup  : <?= round($timing['sumup_api']??0,  2) ?> s
+Queries WP : <?= round($timing['wp_queries']??0, 2) ?> s
+</pre>
+
 </div>

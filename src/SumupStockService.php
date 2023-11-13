@@ -26,7 +26,7 @@ class SumupStockService
         return json_decode($json);
     }
 
-    public function getTransactions(string $date_start, string $date_end)
+    public function getTransactions(string $date_start, string $date_end, ?bool $filterOutWcOrders = false)
     {
         $data = $this->get(
             "/financials/transactions",
@@ -57,6 +57,10 @@ class SumupStockService
                 amount: $tr->amount,
                 timestamp: $tr->timestamp,
             );
+
+            // On ne prend pas les transactions déjà importées
+            if ($filterOutWcOrders && $this->getOrder($tr->id)) continue;
+
             $details = $this->get(
                 "/transactions",
                 ['id' => $tr->id]
