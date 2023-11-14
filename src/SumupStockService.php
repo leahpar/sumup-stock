@@ -59,11 +59,12 @@ class SumupStockService
             );
 
             // On ne prend pas les transactions déjà importées
-            if ($filterOutWcOrders && $this->getOrder($tr->id)) continue;
+            if ($filterOutWcOrders && $this->getOrder($tr->id, $tr->transaction_code)) continue;
 
             $details = $this->get(
                 "/transactions",
-                ['id' => $tr->id]
+                //['id' => $tr->id]
+                ['transaction_code' => $tr->transaction_code]
             );
 
             foreach ($details->events as $event) {
@@ -106,7 +107,7 @@ class SumupStockService
     {
         /** @var Transaction $t */
         foreach ($transactions as $t) {
-            $t->wc_order = $this->getOrder($t->id);
+            $t->wc_order = $this->getOrder($t->id, $t->code);
         }
     }
 
@@ -133,11 +134,15 @@ class SumupStockService
         return $cpt;
     }
 
-    public function getOrder(string $sumupTrId): ?WC_Order
+    public function getOrder(?string $sumupTrId = null, ?string $sumupTrCode = null): ?WC_Order
     {
+        if ($sumupTrId == null && $sumupTrCode == null) {
+            throw new \Exception("Il faut au moins un paramètre");
+        }
+
         $order = wc_get_orders([
             'meta_key' => 'sumup_transaction',
-            'meta_value' => $sumupTrId
+            'meta_value' => [$sumupTrId, $sumupTrCode]
             //'sumup_transaction' => $sumupTrId
         ]);
         return $order[0] ?? null;
@@ -164,7 +169,7 @@ class SumupStockService
         $order->set_date_paid($transaction->date);
         $order->set_date_completed($transaction->date);
 
-        $order->add_meta_data('sumup_transaction', $transaction->id);
+        $order->add_meta_data('sumup_transaction', $transaction->code);
 
         $order->calculate_totals();
         $order->set_status('wc-completed');

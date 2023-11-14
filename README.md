@@ -35,6 +35,13 @@ Indiquer la référence Sumup dans l'attribut' "Référence Sumup" de la fiche p
 5. Cliquer sur le bouton `Importer les commandes`
 6. Enjoy !
 
+### Ajout manuel d'une commande
+
+Lors de la création manuelle d'une commande correspondant à une transaction Sumup, 
+il est possible d'ajouter le numéro de transaction Sumup dans le champ personnalisé "sumup_transaction".
+Ainsi la transaction sera considérée comme importée et ne sera pas importée à nouveau.
+
+![img_3.png](img_3.png)
 
 ## Automatisation
 
